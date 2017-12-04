@@ -1,2 +1,2 @@
 # pyga
-python based genome annotation library that has some functions on bedtools and the UCSC toolset, focus on retrieving genome annotations from slice indeices/ids rapidly
+ python based genome annotation library that has some functions of bedtools and the UCSC toolset, focused on retrieving genome annotations from slice indices/ids rapidly 
