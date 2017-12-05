@@ -1,6 +1,6 @@
 #ifndef GA_HPP
 #define GA_HPP
-#define _GLIBCXX_USE_CXX11_ABI 0
+//#define _GLIBCXX_USE_CXX11_ABI 0
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 //#include <boost/archive/binary_iarchive.hpp>
@@ -14,25 +14,19 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <memory>
 #include <queue>
 #include <set>
 #include <string.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
-namespace ga {
-typedef std::unordered_map<std::string, unsigned> map_;
-typedef std::unordered_map<std::string, std::vector<unsigned>> map2_;
+namespace ga{
+typedef std::unordered_map<std::string, unsigned> map;
+typedef std::unordered_map<std::string, std::vector<unsigned>> map2;
 typedef boost::iterator_range<std::string::const_iterator> string_view;
-typedef std::shared_ptr<map_> map;
-typedef std::shared_ptr<map2_> map2;
-// typedef boost::tokenizer<boost::escaped_list_separator<char>> Tokenizer;
 
 typedef enum { sym = 0, annot, scalar, vector } dType;
 typedef enum { ignore = 0, maskOnly, getData } passthroughType;
-template <typename T> using Pt = std::shared_ptr<std::vector<T>>;
-template <typename T> using Pool = std::queue<std::shared_ptr<std::vector<T>>>;
 
 // basic annotation types
 struct vectors {
@@ -200,33 +194,17 @@ struct gene {
   bool operator!=(const gene &another) { return (idx != another.idx); };
 };
 
-// a collection of data and annotation
-class Base {
-public:
-  Base() : coreIDs(std::make_shared<map_>(map_())){};
-  /* Constructors */
-  template <typename T> Pt<T> const add() {
-    auto in = std::make_shared<std::vector<T>>();
-    in->reserve(maxEle);
-    return in;
-  };
-  // we use concrete types instead of base class ptrs to
-  // increase performance somewhat
-  map coreIDs;
-  unsigned maxEle;
-};
 
 // genome based data source
-class BaseGenome : public Base {
+class BaseGenome  {
 public:
-  using Base::Base;
-  BaseGenome() : GeneSym(std::make_shared<map2_>(map2_())){};
+  BaseGenome(){};
   virtual void add_entry(std::vector<string_view> &) = 0;
   virtual void load(const std::string &fname) = 0;
   std::vector<unsigned> find_sym(const std::string &in) {
-    return GeneSym->at(in);
+    return GeneSym.at(in);
   };
-  unsigned find_id(const std::string &in) { return coreIDs->at(in); };
+  unsigned find_id(const std::string &in) { return coreIDs.at(in); };
   virtual unsigned long size(const std::string &in) { return sizes[in]; };
   virtual std::vector<std::string> chroms() {
     std::vector<std::string> out;
@@ -236,13 +214,13 @@ public:
   };
   virtual std::vector<unsigned> find_ids(const std::vector<std::string> &);
   virtual std::vector<unsigned> find_syms(const std::vector<std::string> &);
-  virtual std::vector<unsigned> r(const std::string &chr, const int &l,
-                                  const int &r);
-  virtual gene closest(const std::string &chr, const int &l, const int &r);
-  virtual gene closest_right(const std::string &chr, const int &l, const int &r);
-  virtual gene closest_left(const std::string &chr, const int &l, const int &r);
-  virtual gene *const next_gene(const unsigned &idx);
-  virtual gene *const prev_gene(const unsigned &idx);
+  virtual std::vector<unsigned> r(const std::string &chr, const unsigned &l,
+                                  const unsigned &r);
+  virtual gene closest(const std::string &chr, const unsigned &l, const unsigned &r);
+  virtual gene closest_right(const std::string &chr, const unsigned &l, const unsigned &r);
+  virtual gene closest_left(const std::string &chr, const unsigned &l, const unsigned &r);
+  virtual gene const* next_gene(const unsigned &idx);
+  virtual gene const* prev_gene(const unsigned &idx);
   virtual interval intergene_up(const unsigned &idx);
   virtual interval intergene_down(const unsigned &idx);
   std::vector<unsigned> all() {
@@ -288,11 +266,12 @@ public:
     }
     return out;
   };
-  BaseGenome *const get_this() { return this; };
   map2 GeneSym;
   std::unordered_map<std::string, unsigned long> sizes;
   std::multiset<interval, intervalCmp> GeneLoci;
   std::vector<gene> Genes;
+  map coreIDs;
+  unsigned maxEle;
 };
 
 class UCSCRefGene : public BaseGenome {
@@ -300,13 +279,7 @@ public:
   UCSCRefGene(){};
   void add_entry(std::vector<string_view> &);
   void load(const std::string &);
-  void load_chromSizes(const std::string &fname);
+  void load_chromSizes(const std::string &);
 };
-
-// immutable IDs based data. IDs cannot be changed after init
-class BaseIDsImmutable : public Base {};
-
-// mutable IDs, IDs can be joined or broken
-class BaseIDsMutable : public Base {};
 };
 #endif

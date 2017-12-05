@@ -39,7 +39,6 @@ BOOST_PYTHON_MODULE(pyga) {
       .def_readwrite("strand", &inv::strand)
       .def_readwrite("seq", &inv::seq);
   class_<UCSCRefGene>("UCSCRefGene")
-      .def("load", &UCSCRefGene::load)
       .def("iter_genes", &UCSCRefGene::iter_genes)
       .def("iter_genes_unique", &UCSCRefGene::iter_genes_unique)
       .def("get_genes", &UCSCRefGene::get_genes)
@@ -49,12 +48,13 @@ BOOST_PYTHON_MODULE(pyga) {
       .def("closest_right", &UCSCRefGene::closest_right)
       .def("intergene_up", &UCSCRefGene::intergene_up)
       .def("intergene_down", &UCSCRefGene::intergene_down)
-      .def("load_sizes", &UCSCRefGene::load_chromSizes)
       .def("find_sym", &UCSCRefGene::find_sym)
       .def("find_syms", &UCSCRefGene::find_syms)
       .def("find_id", &UCSCRefGene::find_id)
       .def("find_ids", &UCSCRefGene::find_ids)
       .def("size", &UCSCRefGene::size)
       .def("chroms", &UCSCRefGene::chroms)
-      .def("r", &UCSCRefGene::r);
+      .def("r", &UCSCRefGene::r)
+      .def("load", &UCSCRefGene::load)
+      .def("load_sizes", &UCSCRefGene::load_chromSizes);
 };

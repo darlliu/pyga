@@ -1,7 +1,7 @@
 #ifndef GA_CPP
 #define GA_CPP
 #include "ga.hpp"
-namespace ga {
+namespace ga{
 std::vector<char *> tokenize2(std::string &in, char *sep) {
   std::vector<char *> out;
   char *pch = strtok(&in[0], sep);
@@ -78,16 +78,16 @@ void UCSCRefGene::load_chromSizes(const std::string &fname) {
 }
 
 void UCSCRefGene::add_entry(std::vector<string_view> &vals) {
-  auto idx = Genes.size();
+  unsigned int idx = Genes.size();
   gene g;
   g.idx = idx;
   auto rsq = std::string(vals[1].begin(), vals[1].end());
   auto gsm = std::string(vals[12].begin(), vals[12].end());
-  (*coreIDs)[rsq] = idx;
-  if (GeneSym->count(gsm) == 0)
-    (*GeneSym)[gsm] = {idx};
+  coreIDs[rsq] = idx;
+  if (GeneSym.count(gsm) == 0)
+    GeneSym[gsm] = {idx};
   else
-    (*GeneSym)[gsm].push_back(idx);
+    GeneSym[gsm].push_back(idx);
   g.chr = boost::flyweight<std::string>(
       std::string(vals[2].begin(), vals[2].end()));
   auto sz = sizes[g.chr];
@@ -106,8 +106,9 @@ void UCSCRefGene::add_entry(std::vector<string_view> &vals) {
   auto cnt = boost::lexical_cast<unsigned>(vals[8]);
   auto s1 = std::string(vals[9].begin(), vals[9].end()),
        s2 = std::string(vals[10].begin(), vals[10].end());
-  auto T1 = tokenize2(s1, ",");
-  auto T2 = tokenize2(s2, ",");
+  char sep[1]={','};
+  auto T1 = tokenize2(s1, sep);
+  auto T2 = tokenize2(s2, sep);
   for (int i = 0; i < T1.size(); ++i) {
     auto b1 = T1[i];
     auto b2 = T2[i];
@@ -132,8 +133,8 @@ BaseGenome::find_syms(const std::vector<std::string> &in) {
   std::vector<unsigned> out;
   out.reserve(in.size());
   for (auto &v : in)
-    if (GeneSym->find(v) != GeneSym->end())
-      for (auto &vv : GeneSym->at(v))
+    if (GeneSym.find(v) != GeneSym.end())
+      for (auto &vv : GeneSym.at(v))
         out.push_back(vv);
   std::sort(out.begin(), out.end());
   return out;
@@ -143,14 +144,14 @@ std::vector<unsigned> BaseGenome::find_ids(const std::vector<std::string> &in) {
   std::vector<unsigned> out;
   out.reserve(in.size());
   for (auto &v : in)
-    if (coreIDs->find(v) != coreIDs->end())
-      out.push_back(coreIDs->at(v));
+    if (coreIDs.find(v) != coreIDs.end())
+      out.push_back(coreIDs.at(v));
   std::sort(out.begin(), out.end());
   return out;
 }
 
-std::vector<unsigned> BaseGenome::r(const std::string &chr, const int &l,
-                                    const int &r) {
+std::vector<unsigned> BaseGenome::r(const std::string &chr, const unsigned &l,
+                                    const unsigned &r) {
   interval test{boost::flyweight<std::string>(chr),
                 boost::flyweight<unsigned long>(0),
                 l,
@@ -166,7 +167,7 @@ std::vector<unsigned> BaseGenome::r(const std::string &chr, const int &l,
   return out;
 }
 
-gene BaseGenome::closest_left(const std::string &chr, const int &l, const int &r) {
+gene BaseGenome::closest_left(const std::string &chr, const unsigned &l, const unsigned &r) {
   interval test{boost::flyweight<std::string>(chr),
                 boost::flyweight<unsigned long>(0),
                 l,
@@ -180,7 +181,7 @@ gene BaseGenome::closest_left(const std::string &chr, const int &l, const int &r
   return Genes[itt->idx];
 }
 
-gene BaseGenome::closest_right(const std::string &chr, const int &l, const int &r) {
+gene BaseGenome::closest_right(const std::string &chr, const unsigned &l, const unsigned &r) {
   interval test{boost::flyweight<std::string>(chr),
                 boost::flyweight<unsigned long>(0),
                 l,
@@ -193,7 +194,7 @@ gene BaseGenome::closest_right(const std::string &chr, const int &l, const int &
   return Genes[itt->idx];
 }
 
-gene BaseGenome::closest(const std::string &chr, const int &l, const int &r) {
+gene BaseGenome::closest(const std::string &chr, const unsigned &l, const unsigned &r) {
   interval test{boost::flyweight<std::string>(chr),
                 boost::flyweight<unsigned long>(0),
                 l,
@@ -220,7 +221,7 @@ gene BaseGenome::closest(const std::string &chr, const int &l, const int &r) {
   else
     return Genes[itt->idx];
 }
-gene *const BaseGenome::next_gene(const unsigned &idx) {
+gene const* BaseGenome::next_gene(const unsigned &idx) {
   if (idx >= maxEle)
     return nullptr;
   auto g = Genes[idx];
@@ -235,7 +236,7 @@ gene *const BaseGenome::next_gene(const unsigned &idx) {
     return nullptr;
   return &Genes[it->idx];
 };
-gene *const BaseGenome::prev_gene(const unsigned &idx) {
+gene const* BaseGenome::prev_gene(const unsigned &idx) {
   if (idx >= maxEle)
     return nullptr;
   auto g = Genes[idx];
@@ -277,7 +278,7 @@ interval BaseGenome::intergene_down(const unsigned &idx) {
   interval out{boost::flyweight<std::string>(g.chr),
                boost::flyweight<unsigned long>(g.sz),
                g.tx_end + 1,
-               g.sz - 1,
+               (unsigned)g.sz - 1,
                g.idx,
                g.strand};
   auto gg = next_gene(idx);
