@@ -122,7 +122,7 @@ class MySQLDB(object):
     """
     def __init__(self,db,
             MYSQL_HOST="",
-            MYSQL_PORT=,
+            MYSQL_PORT="",
             MYSQL_USER="",
             MYSQL_PASS=""
             ):
