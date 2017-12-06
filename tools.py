@@ -253,10 +253,10 @@ def findClosestGeneFromMiddle(chrom,start, end,genome=None):
     dst = int(start + (end-start)/2)
     ds= abs(dst-gene.end)
     ds2=abs(gene2.start - dst)
-    if ds<10000 or ds2<10000:
-        return 0
+    if abs(ds)<=abs(ds2):
+        return sym,ds
     else:
-        return ds+ds2
+        return sym2,ds2
 
 
 def overlap(x,y,x2,y2):
