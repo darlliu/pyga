@@ -211,3 +211,57 @@ class UCSCGenomeSequence(object):
         else: raise NotImplemented("Background summarization method not implemented")
         Total = A+C+G+T
         return (float(A)/Total, float(C)/Total, float(G)/Total, float(T)/Total)
+
+
+def findClosestGeneFromTSS(chrom, start, end, genome=None):
+    gene=genome.g.closest_left(chrom,start,end)
+    sym=gene.sym
+    gene=gene.inv().v()
+    gene2=genome.g.closest_right(chrom,start,end)
+    sym2=gene2.sym
+    gene2=gene2.inv().v()
+    dst = int(start + (end-start)/2)
+    ds= dst-gene.start
+    ds2=dst-gene2.start
+    if abs(ds)<=abs(ds2):
+        return sym,ds
+    else:
+        return sym2,ds2
+
+def findClosestGeneFromTES(chrom, start, end, genome=None):
+    gene=genome.g.closest_left(chrom,start,end)
+    sym=gene.sym
+    gene=gene.inv().v()
+    gene2=genome.g.closest_right(chrom,start,end)
+    sym2=gene2.sym
+    gene2=gene2.inv().v()
+    dst = int(start + (end-start)/2)
+    ds= dst-gene.end
+    ds2=dst-gene2.end
+    if abs(ds)<=abs(ds2):
+        return sym,ds
+    else:
+        return sym2,ds2
+
+def findClosestGeneFromMiddle(chrom,start, end,genome=None):
+    gene=genome.g.closest_left(chrom,start,end)
+    sym=gene.sym
+    gene=gene.inv().v()
+    gene2=genome.g.closest_right(chrom,start,end)
+    sym2=gene2.sym
+    gene2=gene2.inv().v()
+    dst = int(start + (end-start)/2)
+    ds= abs(dst-gene.end)
+    ds2=abs(gene2.start - dst)
+    if ds<10000 or ds2<10000:
+        return 0
+    else:
+        return ds+ds2
+
+
+def overlap(x,y,x2,y2):
+    if int(y)>=int(x2) and int(y)<=int(y2):
+        return True
+    if int(x)>=int(x2) and int(x)<=int(y2):
+        return True
+    return False
